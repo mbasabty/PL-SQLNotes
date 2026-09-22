@@ -1,1 +1,0 @@
-/*select * from hr.employees;*/
