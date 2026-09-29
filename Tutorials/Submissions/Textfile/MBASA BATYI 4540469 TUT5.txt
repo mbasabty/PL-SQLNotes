@@ -1,0 +1,67 @@
+MBASA BATYI 4540469
+
+SET SERVEROUTPUT ON;
+CREATE OR REPLACE FUNCTION get_highest_dept_avg_salary
+RETURN NUMBER
+IS
+    CURSOR c_dept_avg IS
+        SELECT d.department_name,
+               ROUND(AVG(e.salary), 2) AS avg_salary
+        FROM   HR.employees e
+        JOIN   HR.departments d ON e.department_id = d.department_id
+        GROUP BY d.department_name;
+
+    v_max_avg  NUMBER := 0;
+    v_max_dept HR.departments.department_name%TYPE;
+    
+BEGIN
+    FOR rec IN c_dept_avg LOOP
+        IF rec.avg_salary > v_max_avg THEN
+            v_max_avg  := rec.avg_salary;
+            v_max_dept := rec.department_name;
+        END IF;
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('The ' || v_max_dept ||
+        ' department has the highest average of: R' ||
+        TO_CHAR(v_max_avg, 'FM999,999,990.00'));
+
+    RETURN v_max_avg;
+END get_highest_dept_avg_salary;
+/
+
+DECLARE
+    v_highest_avg NUMBER;
+    v_dept_name   HR.departments.department_name%TYPE;
+    v_full_name   VARCHAR2(100);
+    v_salary      HR.employees.salary%TYPE;
+BEGIN
+    v_highest_avg := get_highest_dept_avg_salary;
+
+    SELECT d.department_name
+    INTO   v_dept_name
+    FROM   HR.employees e
+    JOIN   HR.departments d ON e.department_id = d.department_id
+    GROUP BY d.department_name
+    HAVING ROUND(AVG(e.salary), 2) = v_highest_avg;
+
+    SELECT first_name || ' ' || last_name, salary
+    INTO   v_full_name, v_salary
+    FROM (
+        SELECT first_name, last_name, salary
+        FROM   HR.employees
+        WHERE  salary > v_highest_avg
+        ORDER BY salary DESC
+    )
+    WHERE ROWNUM = 1;
+
+    DBMS_OUTPUT.PUT_LINE('The employee that earns more than the ' ||
+        v_dept_name || ' department is ' || v_full_name ||
+        ' and he earns R' || TO_CHAR(v_salary, 'FM999,999,990.00'));
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('No employee earns more than the ' ||
+            v_dept_name || ' department''s average salary.');
+END;
+/
