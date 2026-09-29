@@ -1,0 +1,22 @@
+DECLARE 
+    TYPE t_record  is RECORD
+        (SAL             NUMBER(8),
+         MINSAL          NUMBER(8) DEFAULT 100,
+         HIREDATE        HR.employees.hire_date%TYPE,
+         Record1         HR.employees%ROWTYPE);
+         my_record      t_record;
+         
+         
+BEGIN
+    my_record.SAL       := my_record.MINSAL + 500;
+    my_record.HIREDATE  := sysdate;
+    
+    SELECT * 
+    INTO my_record.Record1
+    FROM HR.employees
+    WHERE employee_id = 100;
+    
+    DBMS_OUTPUT.PUT_LINE( my_record.Record1.last_name ||' '|| TO_CHAR(my_record.HIREDATE) ||' '|| TO_CHAR(my_record.SAL,'FML999,999,999.00'));
+
+END;
+/

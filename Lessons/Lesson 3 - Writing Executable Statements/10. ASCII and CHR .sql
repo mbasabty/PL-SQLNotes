@@ -1,0 +1,5 @@
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(ASCII('A'));   -- 65
+  DBMS_OUTPUT.PUT_LINE(CHR(66));      -- B
+END;
+/
